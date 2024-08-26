@@ -3,7 +3,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
  
-//const usersRouter = require('./routes/userAPI');
+const usersRouter = require('./routes/userAPI');
  
 require('dotenv').config(); //for using variables from .env file.
  
@@ -24,3 +24,5 @@ app.listen(port, () => console.log(`Server started on port ${port}`));
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
+
+app.use('/users', usersRouter); 
