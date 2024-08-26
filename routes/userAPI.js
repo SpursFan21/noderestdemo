@@ -57,13 +57,13 @@ router.put('/:id', getUser, async (req, res) => {
 });
 // Delete a user
 router.delete('/:id', getUser, async (req, res) => {
-  try {
-    await res.user.remove();
-    res.json({ message: 'User deleted' });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-});
+    try {
+      await res.user.deleteOne();
+      res.json({ message: 'User deleted' });
+      } catch (err) {
+        res.status(500).json({ message: err.message });
+      }
+  });
  
  
 async function getUser(req, res, next) {
