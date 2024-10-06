@@ -1,51 +1,61 @@
-// Index.js
- 
+// index.js
+
 const express = require('express');
 const mongoose = require('mongoose');
- 
+const { MongoClient, ServerApiVersion } = require('mongodb'); // MongoClient for separate MongoDB connection
 const usersRouter = require('./routes/userAPI');
- 
-//require('dotenv').config(); //for using variables from .env file.
-require('./config/config');
- 
-console.log(process.env.NODE_ENV);
- 
-console.log(process.env.MONGODB_URL);
- 
+
+require('dotenv').config(); // For using variables from .env file
+
 // Set up the express app
-const app = express();
-const port = process.env.PORT || 3000;
- 
+const app = express(); // Instantiates the express object
+const port = process.env.PORT || 3000; // App runs on localhost:3000 in development environment
+
 // Allows us to accept the data in JSON format
 app.use(express.json());
- 
+
+// Connect to MongoDB using Mongoose
 mongoose.connect(process.env.MONGODB_URL).then(() => {
-  console.log("MongoDB is connected!");
+  console.log("MongoDB (Mongoose) is connected!");
+}).catch((err) => {
+  console.error("Error connecting to MongoDB with Mongoose: ", err);
 });
- 
+
+// MongoClient connection
+const uri = "mongodb+srv://12Batwom34:12Batwom34@dockerdatacluster.f3sgr.mongodb.net/?retryWrites=true&w=majority&appName=DockerDataCluster"; 
+
+// Create a MongoClient with MongoClientOptions to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+
+async function run() {
+  try {
+    // Connect the client to the server
+    await client.connect();
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your MongoDB deployment using MongoClient!");
+  } catch (error) {
+    console.error("Error connecting to MongoDB using MongoClient: ", error);
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await client.close();
+  }
+}
+
+// Start the MongoClient connection
+run().catch(console.dir);
+
 // Start the server
 app.listen(port, () => console.log(`Server started on port ${port}`));
- 
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-app.use('/users', usersRouter); 
-
-//This enabled CORS, Cross-origin resource sharing (CORS) is a mechanism that allows restricted resources (e.g. fonts) 
-//on a web page to be requested from another domain outside the domain from which the first resource was served
- 
-app.all('/*', function(req, res, next) {
-  // CORS headers
-  res.header("Access-Control-Allow-Origin", "*"); // restrict it to the required domain
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-  // Set custom headers for CORS
-  res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token,X-Key');
-  if (req.method == 'OPTIONS') {
-    res.status(200).end();
-  } else {
-    next();
-  }
-});
- 
-module.exports = app;
+app.use('/users', usersRouter);
